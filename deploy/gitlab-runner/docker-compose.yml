@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  runner:
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command:
+    - --loglevel warning
+    volumes:
+    - /mnt/gitlab/cache:/cache
+    - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+    - GITLAB_RUNNER_TOKEN
+    - GITLAB_URL

@@ -1,0 +1,33 @@
+image: binocarlos/cibase:v6
+
+variables:
+  DOCKER_REGISTRY: gcr.io
+  IMAGENAME: gitlab-k8s-example
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  variables:
+    IMAGE: $DOCKER_REGISTRY/$GCLOUD_PROJECT_ID/$IMAGENAME:$CI_COMMIT_SHA
+  before_script:
+    - bash scripts/ci_connect.sh
+  script:  
+    - docker build -t $IMAGE .
+    - gcloud docker -- push $IMAGE
+
+test:
+  stage: test
+  variables:
+    IMAGE: $DOCKER_REGISTRY/$GCLOUD_PROJECT_ID/$IMAGENAME:$CI_COMMIT_SHA
+  before_script:
+    - export NAMESPACE="test$(echo $CI_COMMIT_SHA | cut -c1-8)"
+    - bash scripts/ci_connect.sh
+    # deploy our app to a new namespace
+    - echo $NAMESPACE
+    - kubectl create ns $NAMESPACE
+  script:
+    - cat manifests/pvc.yaml | envsubst | kubectl apply -f -
+    - cat manifests/job.yaml | envsubst | kubectl apply -f -

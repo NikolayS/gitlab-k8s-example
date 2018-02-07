@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gitlab-runner
+  namespace: gitlab-runner
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gitlab-runner
+    spec:
+      containers:
+      - name: api
+        image: binocarlos/dm-gitlab-runner:v10.2.0
+        env:
+        - name: GITLAB_RUNNER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: runnertoken
+              key: runnertoken.txt
+        - name: GITLAB_URL
+          valueFrom:
+            secretKeyRef:
+              name: gitlaburl
+              key: gitlaburl.txt
+        volumeMounts:
+          - name: docker-sock
+            mountPath: /var/run/docker.sock
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock

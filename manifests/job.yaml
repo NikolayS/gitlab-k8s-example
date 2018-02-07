@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: ${NAMESPACE}
+  name: test-job
+spec:
+  template:
+    metadata:
+      name: test-job
+    spec:
+      restartPolicy: Never
+      volumes:
+      - name: test-storage
+        persistentVolumeClaim:
+         claimName: test-pvc
+      nodeSelector:
+        dmserver: "true"
+      containers:
+      - name: test-runner
+        image: ${IMAGE}
+        volumeMounts:
+        - mountPath: "/data"
+          name: test-storage
